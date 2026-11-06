@@ -1,0 +1,12 @@
+name: 檢查登入元件網址
+on: workflow_dispatch
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 檢查 GitHub Pages 是否正確提供登入元件
+        run: |
+          for u in /__/auth/handler /__/auth/handler.js /__/auth/iframe /__/auth/iframe.js /__/auth/experiments.js /__/firebase/init.json "/__/auth/handler?apiKey=x&state=y" /tripsplit/; do
+            curl -sS -o /tmp/body -D /tmp/h -w "%{http_code} %{content_type} redirects=%{num_redirects} final=%{url_effective}  $u\n" -L "https://keyw007.github.io$u"
+            head -c 120 /tmp/body | tr '\n' ' '; echo; echo
+          done
