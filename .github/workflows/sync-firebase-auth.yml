@@ -27,7 +27,7 @@ jobs:
           get /__/auth/handler.js     __/auth/handler.js
           get /__/auth/iframe.js      __/auth/iframe.js
           get /__/auth/experiments.js __/auth/experiments.js optional
-          get /__/firebase/init.json  __/firebase/init.json
+          get /__/firebase/init.json  __/firebase/init.json.download optional
           # handler.html 裡引用的其他檔案也列出來，方便確認沒有漏抓
           grep -o 'src="[^"]*"' __/auth/*.html || true
           [ $fail = 0 ]
@@ -36,6 +36,6 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@users.noreply.github.com
-          git add __
+          git add __/auth
           git diff --cached --quiet || git commit -m "更新 Firebase 登入元件"
           git push
