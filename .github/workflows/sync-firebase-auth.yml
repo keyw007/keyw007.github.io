@@ -1,0 +1,32 @@
+name: 更新 Firebase 登入元件
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/sync-firebase-auth.yml']
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 下載登入元件
+        run: |
+          set -e
+          SRC=https://tripsplit-86d7e.firebaseapp.com
+          mkdir -p __/auth __/firebase
+          # GitHub Pages 會把沒有副檔名的網址對應到同名 .html，所以 handler、iframe 存成 .html
+          curl -fsSL $SRC/__/auth/handler       -o __/auth/handler.html
+          curl -fsSL $SRC/__/auth/iframe        -o __/auth/iframe.html
+          curl -fsSL $SRC/__/auth/handler.js    -o __/auth/handler.js
+          curl -fsSL $SRC/__/auth/iframe.js     -o __/auth/iframe.js
+          curl -fsSL $SRC/__/auth/experiments.js -o __/auth/experiments.js
+          curl -fsSL $SRC/__/firebase/init.json -o __/firebase/init.json
+          ls -la __/auth __/firebase
+      - name: 提交
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@users.noreply.github.com
+          git add __
+          git diff --cached --quiet || git commit -m "更新 Firebase 登入元件"
+          git push
