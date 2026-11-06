@@ -16,12 +16,21 @@ jobs:
           SRC=https://tripsplit-86d7e.firebaseapp.com
           mkdir -p __/auth __/firebase
           # GitHub Pages 會把沒有副檔名的網址對應到同名 .html，所以 handler、iframe 存成 .html
-          curl -fsSL $SRC/__/auth/handler       -o __/auth/handler.html
-          curl -fsSL $SRC/__/auth/iframe        -o __/auth/iframe.html
-          curl -fsSL $SRC/__/auth/handler.js    -o __/auth/handler.js
-          curl -fsSL $SRC/__/auth/iframe.js     -o __/auth/iframe.js
-          curl -fsSL $SRC/__/auth/experiments.js -o __/auth/experiments.js
-          curl -fsSL $SRC/__/firebase/init.json -o __/firebase/init.json
+          fail=0
+          get() {
+            code=$(curl -sSL -w '%{http_code}' -o "$2" "$SRC$1")
+            echo "$code $1"
+            if [ "$code" != 200 ]; then rm -f "$2"; [ "$3" = optional ] || fail=1; fi
+          }
+          get /__/auth/handler        __/auth/handler.html
+          get /__/auth/iframe         __/auth/iframe.html
+          get /__/auth/handler.js     __/auth/handler.js
+          get /__/auth/iframe.js      __/auth/iframe.js
+          get /__/auth/experiments.js __/auth/experiments.js optional
+          get /__/firebase/init.json  __/firebase/init.json
+          # handler.html 裡引用的其他檔案也列出來，方便確認沒有漏抓
+          grep -o 'src="[^"]*"' __/auth/*.html || true
+          [ $fail = 0 ]
           ls -la __/auth __/firebase
       - name: 提交
         run: |
